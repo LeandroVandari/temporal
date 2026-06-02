@@ -240,9 +240,8 @@ impl TryFrom<Unit> for IcuUnit {
     }
 }
 
-impl<'a> TryFrom<&'a CalendarFields> for DateFields<'a> {
-    type Error = TemporalError;
-    fn try_from(other: &'a CalendarFields) -> TemporalResult<Self> {
+impl<'a> From<&'a CalendarFields> for DateFields<'a> {
+    fn from(other: &'a CalendarFields) -> Self {
         let mut this = DateFields::default();
         this.era = other.era.as_ref().map(|o| o.as_bytes());
         this.era_year = other.era_year;
@@ -250,7 +249,7 @@ impl<'a> TryFrom<&'a CalendarFields> for DateFields<'a> {
         this.month_code = other.month_code.as_ref().map(|o| o.0.as_bytes());
         this.ordinal_month = other.month;
         this.day = other.day;
-        Ok(this)
+        this
     }
 }
 
@@ -325,7 +324,7 @@ impl Calendar {
             );
         }
 
-        let fields = DateFields::try_from(&fields)?;
+        let fields = DateFields::from(&fields);
         let mut options = DateFromFieldsOptions::default();
         options.overflow = Some(overflow.into());
         options.missing_fields_strategy = Some(MissingFieldsStrategy::Reject);
@@ -371,7 +370,7 @@ impl Calendar {
             } else {
                 // The non-ISO case is specified in <https://tc39.es/proposal-intl-era-monthcode/#sup-temporal-nonisomonthdaytoisoreferencedate>
                 //
-                let date_fields = DateFields::try_from(&fields)?;
+                let date_fields = DateFields::from(&fields);
                 {
                     // This algorithm requires an early-check to ensure the year is *somewhat* valid:
                     // > b. If there exists no combination of inputs such that ! CalendarIntegersToISO(calendar, fields.[[Year]], ..., ...) would
@@ -393,8 +392,8 @@ impl Calendar {
                     fields_max.month_code = None;
                     fields_min.day = Some(1);
                     fields_max.day = Some(40);
-                    let fields_min = DateFields::try_from(&fields_min)?;
-                    let fields_max = DateFields::try_from(&fields_max)?;
+                    let fields_min = DateFields::from(&fields_min);
+                    let fields_max = DateFields::from(&fields_max);
                     let date_min = self.0.from_fields(fields_min, options)?;
                     let date_max = self.0.from_fields(fields_max, options)?;
                     let iso_min = IsoDate::from_icu4x(self.0.to_iso(&date_min));
@@ -431,7 +430,7 @@ impl Calendar {
             );
         }
 
-        let fields = DateFields::try_from(&fields)?;
+        let fields = DateFields::from(&fields);
         let mut options = DateFromFieldsOptions::default();
         options.overflow = Some(overflow.into());
         if fields.day.is_none() {
@@ -487,7 +486,7 @@ impl Calendar {
         }
 
         let fields = CalendarFields::from(fields);
-        let fields = DateFields::try_from(&fields)?;
+        let fields = DateFields::from(&fields);
         let mut options = DateFromFieldsOptions::default();
         options.overflow = Some(overflow.into());
         if fields.extended_year.is_none() && fields.era_year.is_none() {
