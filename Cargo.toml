@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "provider",
-    "temporal_capi",
     "zoneinfo",
 
     # Tools
@@ -94,9 +93,13 @@ timezone_provider = { workspace = true }
 web-time = { workspace = true, optional = true }
 iana-time-zone = { workspace = true, optional = true }
 calendrical_calculations = "0.2.4"
+thiserror = "2.0.18"
 
 [dev-dependencies]
-timezone_provider = { workspace = true, features = ["zoneinfo64", "experimental_tzif"] }
+timezone_provider = { workspace = true, features = [
+    "zoneinfo64",
+    "experimental_tzif",
+] }
 zoneinfo64 = { workspace = true }
 resb = "0.1.0"
 
@@ -106,10 +109,7 @@ log = ["dep:log"]
 compiled_data = ["tzdb"]
 sys = ["std", "compiled_data", "dep:web-time"]
 sys-local = ["sys", "dep:iana-time-zone"]
-tzdb = [
-    "std",
-    "timezone_provider/tzif",
-]
+tzdb = ["std", "timezone_provider/tzif"]
 std = []
 # https://github.com/boa-dev/temporal/issues/613
 # ECMA-conformant implementations must store durations as float64-representable numbers

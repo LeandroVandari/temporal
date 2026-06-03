@@ -476,13 +476,13 @@ impl Calendar {
                 overflow,
                 ResolutionType::YearMonth,
             )?;
-            return PlainYearMonth::new_with_overflow(
+            return Ok(PlainYearMonth::new_with_overflow(
                 resolved_fields.arithmetic_year,
                 resolved_fields.month,
                 Some(resolved_fields.day),
                 self.clone(),
                 overflow,
-            );
+            )?);
         }
 
         let fields = CalendarFields::from(fields);
@@ -496,13 +496,13 @@ impl Calendar {
         options.missing_fields_strategy = Some(MissingFieldsStrategy::Ecma);
         let calendar_date = self.0.from_fields(fields, options)?;
         let iso = self.0.to_iso(&calendar_date);
-        PlainYearMonth::new_with_overflow(
+        Ok(PlainYearMonth::new_with_overflow(
             Iso.year_info(&iso).year,
             Iso.month(&iso).ordinal,
             Some(Iso.day_of_month(&iso).0),
             self.clone(),
             overflow,
-        )
+        )?)
     }
 
     /// `CalendarDateAdd`

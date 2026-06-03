@@ -2,12 +2,28 @@
 
 use core::fmt;
 use ixdtf::ParseError;
+use thiserror::Error;
 use timezone_provider::TimeZoneProviderError;
 
 use icu_calendar::error::{DateAddError, DateFromFieldsError};
 
+#[derive(Debug, Error, Clone, Copy, PartialEq)]
+#[error("Invalid ISO date")]
+pub struct InvalidIsoDateError;
+
+#[derive(Debug, Error, Clone, Copy, PartialEq)]
+#[error("Date out of range")]
+pub struct DateOutOfRangeError;
+
+#[derive(Debug, Error, Clone, Copy, PartialEq)]
+#[error("Invalid date: {0}")]
+pub enum InvalidDateError {
+    InvalidIsoDate(#[from] InvalidIsoDateError),
+    DateOutOfRange(#[from] DateOutOfRangeError),
+}
+
 /// `TemporalError`'s error type.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Error)]
 pub enum ErrorKind {
     /// Error.
     #[default]
@@ -20,6 +36,8 @@ pub enum ErrorKind {
     Syntax,
     /// Assert
     Assert,
+
+    InvalidDate(#[from] InvalidDateError),
 }
 
 impl fmt::Display for ErrorKind {
@@ -30,16 +48,26 @@ impl fmt::Display for ErrorKind {
             Self::Range => "RangeError",
             Self::Syntax => "SyntaxError",
             Self::Assert => "ImplementationError",
+            Self::InvalidDate(_) => "InvalidDateError",
         }
         .fmt(f)
     }
 }
 
 /// The error type for `boa_temporal`.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Error)]
 pub struct TemporalError {
     kind: ErrorKind,
     msg: ErrorMessage,
+}
+
+impl<T> From<T> for TemporalError
+where
+    T: Into<ErrorKind>,
+{
+    fn from(value: T) -> Self {
+        Self::new(value.into())
+    }
 }
 
 impl TemporalError {
@@ -133,8 +161,6 @@ impl TemporalError {
         self.msg.to_string()
     }
 }
-
-impl core::error::Error for TemporalError {}
 
 impl fmt::Display for TemporalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -1,6 +1,6 @@
 //! This module implements `PlainDate` and any directly related algorithms.
 
-use crate::error::ErrorMessage;
+use crate::error::{ErrorMessage, InvalidDateError};
 use crate::parsed_intermediates::ParsedDate;
 use crate::{
     builtins::{
@@ -343,26 +343,36 @@ impl PlainDate {
 impl PlainDate {
     /// Creates a new `PlainDate` automatically constraining any values that may be invalid.
     #[inline]
-    pub fn new(year: i32, month: u8, day: u8, calendar: Calendar) -> TemporalResult<Self> {
+    pub fn new(
+        year: i32,
+        month: u8,
+        day: u8,
+        calendar: Calendar,
+    ) -> Result<Self, InvalidDateError> {
         Self::new_with_overflow(year, month, day, calendar, Overflow::Constrain)
     }
 
     /// Creates a new `PlainDate` with an ISO 8601 calendar automatically constraining any
     /// values that may be invalid into a valid range.
     #[inline]
-    pub fn new_iso(year: i32, month: u8, day: u8) -> TemporalResult<Self> {
+    pub fn new_iso(year: i32, month: u8, day: u8) -> Result<Self, InvalidDateError> {
         Self::new(year, month, day, Calendar::default())
     }
 
     /// Creates a new `PlainDate` rejecting any date that may be invalid.
     #[inline]
-    pub fn try_new(year: i32, month: u8, day: u8, calendar: Calendar) -> TemporalResult<Self> {
+    pub fn try_new(
+        year: i32,
+        month: u8,
+        day: u8,
+        calendar: Calendar,
+    ) -> Result<Self, InvalidDateError> {
         Self::new_with_overflow(year, month, day, calendar, Overflow::Reject)
     }
 
     /// Creates a new `PlainDate` with an ISO 8601 calendar rejecting any date that may be invalid.
     #[inline]
-    pub fn try_new_iso(year: i32, month: u8, day: u8) -> TemporalResult<Self> {
+    pub fn try_new_iso(year: i32, month: u8, day: u8) -> Result<Self, InvalidDateError> {
         Self::try_new(year, month, day, Calendar::default())
     }
 
@@ -376,7 +386,7 @@ impl PlainDate {
         day: u8,
         calendar: Calendar,
         overflow: Overflow,
-    ) -> TemporalResult<Self> {
+    ) -> Result<Self, InvalidDateError> {
         let iso = IsoDate::new_with_overflow(year, month, day, overflow)?;
         Ok(Self::new_unchecked(iso, calendar))
     }
@@ -423,11 +433,11 @@ impl PlainDate {
     pub fn from_utf8(s: &[u8]) -> TemporalResult<Self> {
         let parsed = ParsedDate::from_utf8(s)?;
 
-        Self::from_parsed(parsed)
+        Ok(Self::from_parsed(parsed)?)
     }
 
     /// Creates a `PlainDate` from a [`ParsedDate`].
-    pub fn from_parsed(parsed: ParsedDate) -> TemporalResult<Self> {
+    pub fn from_parsed(parsed: ParsedDate) -> Result<Self, InvalidDateError> {
         Self::try_new(
             parsed.record.year,
             parsed.record.month,

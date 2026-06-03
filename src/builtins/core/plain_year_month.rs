@@ -7,7 +7,7 @@ use tinystr::TinyAsciiStr;
 
 use crate::{
     builtins::calendar::{CalendarFields, YearMonthCalendarFields},
-    error::ErrorMessage,
+    error::{DateOutOfRangeError, ErrorMessage, InvalidDateError},
     iso::{year_month_within_limits, IsoDate, IsoDateTime, IsoTime},
     options::{
         DifferenceOperation, DifferenceSettings, Disambiguation, DisplayCalendar, Overflow,
@@ -358,7 +358,7 @@ impl PlainYearMonth {
         month: u8,
         reference_day: Option<u8>,
         calendar: Calendar,
-    ) -> TemporalResult<Self> {
+    ) -> Result<Self, InvalidDateError> {
         Self::new_with_overflow(year, month, reference_day, calendar, Overflow::Constrain)
     }
 
@@ -369,20 +369,28 @@ impl PlainYearMonth {
         month: u8,
         reference_day: Option<u8>,
         calendar: Calendar,
-    ) -> TemporalResult<Self> {
+    ) -> Result<Self, InvalidDateError> {
         Self::new_with_overflow(year, month, reference_day, calendar, Overflow::Reject)
     }
 
     /// Creates a new `PlainYearMonth` with an ISO 8601 calendar, rejecting any date that may be invalid.
     #[inline]
-    pub fn try_new_iso(year: i32, month: u8, reference_day: Option<u8>) -> TemporalResult<Self> {
+    pub fn try_new_iso(
+        year: i32,
+        month: u8,
+        reference_day: Option<u8>,
+    ) -> Result<Self, InvalidDateError> {
         Self::try_new(year, month, reference_day, Calendar::ISO)
     }
 
     /// Creates a new `PlainYearMonth` with an ISO 8601 calendar, constraining any arguments
     /// that are invalid into a valid range.
     #[inline]
-    pub fn new_iso(year: i32, month: u8, reference_day: Option<u8>) -> TemporalResult<Self> {
+    pub fn new_iso(
+        year: i32,
+        month: u8,
+        reference_day: Option<u8>,
+    ) -> Result<Self, InvalidDateError> {
         Self::new(year, month, reference_day, Calendar::ISO)
     }
 
@@ -394,11 +402,11 @@ impl PlainYearMonth {
         reference_day: Option<u8>,
         calendar: Calendar,
         overflow: Overflow,
-    ) -> TemporalResult<Self> {
+    ) -> Result<Self, InvalidDateError> {
         let day = reference_day.unwrap_or(1);
         let iso = IsoDate::regulate(year, month, day, overflow)?;
         if !year_month_within_limits(iso.year, iso.month) {
-            return Err(TemporalError::range().with_message("Exceeded valid range."));
+            return Err(DateOutOfRangeError)?;
         }
         Ok(Self::new_unchecked(iso, calendar))
     }

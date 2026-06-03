@@ -298,29 +298,11 @@ name = "depcheck"
 version = "0.2.3"
 
 [[package]]
-name = "diplomat"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7935649d00000f5c5d735448ad3dc07b9738160727017914cf42138b8e8e6611"
-dependencies = [
- "diplomat_core",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "diplomat-gen"
 version = "0.2.3"
 dependencies = [
  "diplomat-tool",
 ]
-
-[[package]]
-name = "diplomat-runtime"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "640d5943a101226437e9ad4ef2b4181d0ff053a86e77cc18ae73e8c729766ac3"
 
 [[package]]
 name = "diplomat-tool"
@@ -873,21 +855,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "temporal_capi"
-version = "0.2.3"
-dependencies = [
- "diplomat",
- "diplomat-runtime",
- "icu_calendar",
- "icu_locale_core",
- "num-traits",
- "temporal_rs",
- "timezone_provider",
- "writeable",
- "zoneinfo64",
-]
-
-[[package]]
 name = "temporal_rs"
 version = "0.2.3"
 dependencies = [
@@ -900,11 +867,32 @@ dependencies = [
  "log",
  "num-traits",
  "resb",
+ "thiserror",
  "timezone_provider",
  "tinystr",
  "web-time",
  "writeable",
  "zoneinfo64",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4288b5bcbc7920c07a1149a35cf9590a2aa808e0bc1eafaade0b80947865fbc4"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

@@ -34,7 +34,9 @@ use crate::{
         },
         PartialTime, PlainDate,
     },
-    error::{ErrorMessage, TemporalError},
+    error::{
+        DateOutOfRangeError, ErrorMessage, InvalidDateError, InvalidIsoDateError, TemporalError,
+    },
     options::{Overflow, ResolvedRoundingOptions, Unit},
     rounding::IncrementRounder,
     unix_time::EpochNanoseconds,
@@ -276,7 +278,7 @@ impl IsoDate {
         month: u8,
         day: u8,
         overflow: Overflow,
-    ) -> TemporalResult<Self> {
+    ) -> Result<Self, InvalidIsoDateError> {
         match overflow {
             Overflow::Constrain => {
                 let month = month.clamp(1, 12);
@@ -286,7 +288,7 @@ impl IsoDate {
             }
             Overflow::Reject => {
                 if !is_valid_date(year, month, day) {
-                    return Err(TemporalError::range().with_message("not a valid ISO date."));
+                    return Err(InvalidIsoDateError);
                 }
                 // NOTE: Values have been verified to be in a u8 range.
                 Ok(Self::new_unchecked(year, month, day))
@@ -317,10 +319,10 @@ impl IsoDate {
         month: u8,
         day: u8,
         overflow: Overflow,
-    ) -> TemporalResult<Self> {
+    ) -> Result<Self, InvalidDateError> {
         let date = Self::regulate(year, month, day, overflow)?;
         if !iso_dt_within_valid_limits(date, &IsoTime::noon()) {
-            return Err(TemporalError::range().with_enum(ErrorMessage::DateOutOfRange));
+            return Err(DateOutOfRangeError)?;
         }
         Ok(date)
     }
